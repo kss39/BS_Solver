@@ -131,6 +131,13 @@ def system_af(u_a, u_b, a_x, vola, initial, m):
 
 
 def tikhonov(matrix, f, beta):
+    """
+    Uses Tikhonov Regularization to minimize the system.
+    :param matrix: A
+    :param f: f
+    :param beta: regularization parameter
+    :return: minimized U
+    """
     matrix_trans = np.transpose(matrix)
     right = np.matmul(matrix_trans, f)
     left = np.linalg.inv(np.add(np.matmul(matrix_trans, matrix), beta * np.identity(len(matrix[0]))))
