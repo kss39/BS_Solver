@@ -30,11 +30,6 @@ def sigma(data_block):
 
     Similar to u(date_index).
 
-    Parameters
-    ----------
-    date_index : int
-        The index of the date for fitting
-
     Returns
     -------
     sigma : poly1d
@@ -101,6 +96,7 @@ def system_af(u_a, u_b, a_x, vola, initial, m):
     h_x = 1 / m
     h_t = 3 * tau / m
 
+    # Finite difference scheme
     for i in range(m - 1):  # 0 to (M - 2)
         for j in range(1, m - 1):  # 1 to (M - 2)
             Ax = a_x(j * h_x)
@@ -113,6 +109,7 @@ def system_af(u_a, u_b, a_x, vola, initial, m):
             matrix.append(row)
             f.append(0.0)
 
+    # Boundary & initial conditions
     for i in range(m - 1):
         row_a = np.zeros(m ** 2)
         row_b = np.zeros(m ** 2)

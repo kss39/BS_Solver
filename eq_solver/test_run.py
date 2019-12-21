@@ -3,7 +3,7 @@ import pandas as pd
 import num_solver as ns
 
 # The data used to solve BSEq.
-test_data = pd.read_csv('HD_US_062918_C220_Equity.csv')
+test_data = pd.read_csv('./resources/HD_US_062918_C220_Equity.csv')
 
 u_a, u_b = ns.u(test_data)
 a_x = ns.find_ax(*ns.find_sab(test_data))
