@@ -30,8 +30,6 @@ class DataBlock:
         self.sig_fit = find_quad_fit(self.sigma)
         self.ax = find_ax(self.s_a, self.s_b)
         self.initial = initial_value(self.u_a[2], self.u_b[2])
-        # Lazy evaluation
-        self.solution = None
 
     def reg(self, grid_count, beta):
         """
@@ -41,10 +39,9 @@ class DataBlock:
         :param beta: regularization parameter
         :return: the minimizer of the system
         """
-        if self.solution is None:
-            af_system = system_af(self.ua_fit, self.ub_fit, self.ax, self.sigma, self.initial, grid_count)
-            self.solution = tikhonov(*af_system, beta)
-        return self.solution
+        af_system = system_af(self.ua_fit, self.ub_fit, self.ax, self.sigma, self.initial, grid_count)
+        solution = tikhonov(*af_system, beta)
+        return solution
 
 
 def find_quad_fit(data):

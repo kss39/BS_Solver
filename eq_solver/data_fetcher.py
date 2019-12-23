@@ -29,7 +29,6 @@ def fetch(file: Path):
     all_data = pd.read_csv(file)
     cols = all_data.columns
 
-    print(cols)
     loc_ua = cols.get_loc('EOD_OPTION_PRICE_ASK')
     loc_ub = cols.get_loc('EOD_OPTION_PRICE_BID')
     loc_ivol = cols.get_loc('IVOL_LAST')
