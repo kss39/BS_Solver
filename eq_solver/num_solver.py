@@ -3,6 +3,54 @@ import numpy as np
 tau = 1 / 255
 
 
+class DataBlock:
+    def __init__(self, option_ask, option_bid, volatility, stock_ask, stock_bid):
+        """
+        Initializes the DataBlock with given data. Asserts all given data is correct.
+
+        :param option_ask: option ask price for 3 days
+        :param option_bid: option bid price for 3 days
+        :param volatility: implied volatility for 3 days
+        :param stock_ask: current stock ask price
+        :param stock_bid: current stock bid price
+        """
+        for i in {option_ask, option_bid, volatility}:
+            assert type(i) == tuple and len(i) == 3
+        for i in {stock_ask, stock_bid}:
+            assert type(i) == float
+        self.u_a = option_ask
+        self.u_b = option_bid
+        self.sigma = volatility
+        self.s_a = stock_ask
+        self.s_b = stock_bid
+        # Quadratic approximation
+        self.ua_fit = find_quad_fit(self.u_a)
+        self.ub_fit = find_quad_fit(self.u_b)
+        self.sig_fit = find_quad_fit(self.sigma)
+        self.ax = find_ax(self.s_a, self.s_b)
+        self.initial = initial_value(self.u_a[2], self.u_b[2])
+        # Lazy evaluation
+        self.solution = None
+
+    def reg(self, grid_count, beta):
+        """
+        Regularizes the system.
+
+        :param grid_count: partition grid points count
+        :param beta: regularization parameter
+        :return: the minimizer of the system
+        """
+        if self.solution is None:
+            af_system = system_af(self.ua_fit, self.ub_fit, self.ax, self.sigma, self.initial, grid_count)
+            self.solution = tikhonov(*af_system, beta)
+        return self.solution
+
+
+def find_quad_fit(data):
+    fit = np.polyfit([-2 * tau, -1 * tau, 0], data, 2)
+    return np.poly1d(fit, variable="t")
+
+
 def u(data_block):
     """Find the quadratic approximation of u_a, u_b on the given day.
 
