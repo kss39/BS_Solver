@@ -4,7 +4,7 @@ tau = 1 / 255
 
 
 class DataBlock:
-    def __init__(self, option_ask, option_bid, volatility, stock_ask, stock_bid):
+    def __init__(self, today, option_ask, option_bid, volatility, stock_ask, stock_bid):
         """
         Initializes the DataBlock with given data. Asserts all given data is correct.
 
@@ -14,6 +14,7 @@ class DataBlock:
         :param stock_ask: current stock ask price
         :param stock_bid: current stock bid price
         """
+        self.date = today
         for i in {option_ask, option_bid, volatility}:
             assert type(i) == tuple and len(i) == 3
         for i in {stock_ask, stock_bid}:
