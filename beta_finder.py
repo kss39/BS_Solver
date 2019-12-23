@@ -16,4 +16,5 @@ for b in blocks:
         output.write(np.array2string(sol, max_line_width=np.inf, threshold=np.inf))
         output.write("\n\n")
         print('{} with {} finished'.format(b.date, beta))
+
 output.close()
