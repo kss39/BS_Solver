@@ -30,6 +30,14 @@ class DataBlock:
         self.sig_fit = find_quad_fit(self.sigma)
         self.ax = find_ax(self.s_a, self.s_b)
         self.initial = initial_value(self.u_a[2], self.u_b[2])
+        self.af = None
+
+    def af_system(self, grid_count):
+        """
+        Returns the Af system of the datablock.
+        """
+        self.af = system_af(self.ua_fit, self.ub_fit, self.ax, self.sigma, self.initial, grid_count)
+        return self.af
 
     def reg(self, grid_count, beta):
         """
@@ -39,8 +47,9 @@ class DataBlock:
         :param beta: regularization parameter
         :return: the minimizer of the system
         """
-        af_system = system_af(self.ua_fit, self.ub_fit, self.ax, self.sigma, self.initial, grid_count)
-        solution = tikhonov(*af_system, beta)
+        if self.af is None:
+            self.af_system()
+        solution = tikhonov(self.af, beta)
         return solution
 
 
@@ -136,41 +145,74 @@ def system_af(u_a, u_b, a_x, vola, initial, m):
     -------
     the matrix A and the vector f
     """
-    matrix = []
-    f = []
+    A = np.zeros((m ** 2, m ** 2))
+    f = np.zeros(m ** 2)
 
     h_x = 1 / m
     h_t = 3 * tau / m
 
-    # Finite difference scheme
-    for i in range(m - 1):  # 0 to (M - 2)
-        for j in range(1, m - 1):  # 1 to (M - 2)
+    line_count = 0
+    for i in range(m - 1):
+        for j in range(1, m - 1):
             Ax = a_x(j * h_x)
             sigma2 = np.polyval(vola, i * h_x) ** 2
-            row = np.zeros(m ** 2)
-            row[i * m + j] = (h_x ** 2 - 2 * sigma2 * Ax * h_t)
-            row[i * m + j - m] = - h_x ** 2
-            row[i * m + j + 1] = sigma2 * Ax * h_t
-            row[i * m + j - 1] = sigma2 * Ax * h_t
-            matrix.append(row)
-            f.append(0.0)
+            A[line_count][i * m + j] = h_x ** 2 - 2 * sigma2 * Ax * h_t
+            A[line_count][i * m + j - m] = - h_x ** 2
+            A[line_count][i * m + j + 1] = sigma2 * Ax * h_t
+            A[line_count][i * m + j - 1] = sigma2 * Ax * h_t
+            line_count += 1
 
-    # Boundary & initial conditions
-    for i in range(m - 1):
-        row_a = np.zeros(m ** 2)
-        row_b = np.zeros(m ** 2)
-        row_init = np.zeros(m ** 2)
-        row_a[i] = 1
-        matrix.append(row_a)
-        f.append(np.polyval(u_a, (i * h_t)))
-        row_b[i] = 1
-        matrix.append(row_b)
-        f.append(np.polyval(u_b, (i * h_t)))
-        row_init[i] = 1
-        matrix.append(row_init)
-        f.append(initial(i * h_x))
+    for i in range(m):
+        A[line_count][i] = 1
+        f[line_count] = initial(i * h_x)
+        line_count += 1
 
-    return matrix, f
+    for i in range(1, m):
+        A[line_count][i * m] = 1
+        f[line_count] = np.polyval(u_b, (i * h_t))
+        line_count += 1
+        A[line_count][i * m + (m - 1)] = 1
+        f[line_count] = np.polyval(u_a, (i * h_t))
+        line_count += 1
+
+    return A, f
+
+    # Below is the old code.
+    # matrix = []
+    # f = []
+
+    # h_x = 1 / m
+    # h_t = 3 * tau / m
+
+    # # Finite difference scheme
+    # for i in range(m - 1):  # 0 to (M - 2)
+    #     for j in range(1, m - 1):  # 1 to (M - 2)
+    #         Ax = a_x(j * h_x)
+    #         sigma2 = np.polyval(vola, i * h_x) ** 2
+    #         row = np.zeros(m ** 2)
+    #         row[i * m + j] = (h_x ** 2 - 2 * sigma2 * Ax * h_t)
+    #         row[i * m + j - m] = - h_x ** 2
+    #         row[i * m + j + 1] = sigma2 * Ax * h_t
+    #         row[i * m + j - 1] = sigma2 * Ax * h_t
+    #         matrix.append(row)
+    #         f.append(0.0)
+
+    # # Boundary & initial conditions
+    # for i in range(m - 1):
+    #     row_a = np.zeros(m ** 2)
+    #     row_b = np.zeros(m ** 2)
+    #     row_init = np.zeros(m ** 2)
+    #     row_a[i] = 1
+    #     matrix.append(row_a)
+    #     f.append(np.polyval(u_a, (i * h_t)))
+    #     row_b[i] = 1
+    #     matrix.append(row_b)
+    #     f.append(np.polyval(u_b, (i * h_t)))
+    #     row_init[i] = 1
+    #     matrix.append(row_init)
+    #     f.append(initial(i * h_x))
+
+    # return matrix, f
 
 
 def tikhonov(matrix, f, beta):

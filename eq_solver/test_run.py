@@ -12,7 +12,7 @@ init = ns.initial_value(np.polyval(u_a, 0), np.polyval(u_b, 0))
 
 af_system = ns.system_af(u_a, u_b, a_x, vola, init, 20)
 
-solution = ns.tikhonov(*af_system, 0.01)
+solution = ns.tikhonov(*af_system, 0)
 
 B = np.reshape(solution, (20, 20))
 

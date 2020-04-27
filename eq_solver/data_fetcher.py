@@ -1,6 +1,6 @@
 from pathlib import Path
 
-import num_solver as ns
+from eq_solver import num_solver as ns
 import pandas as pd
 
 """
