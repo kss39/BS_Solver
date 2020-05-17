@@ -223,7 +223,12 @@ def tikhonov(matrix, f, beta):
     :param beta: regularization parameter
     :return: minimized U
     """
-    matrix_trans = np.transpose(matrix)
-    right = np.matmul(matrix_trans, f)
-    left = np.linalg.inv(np.add(np.matmul(matrix_trans, matrix), beta * np.identity(len(matrix[0]))))
-    return np.matmul(left, right)
+    n, d = matrix.shape
+    coef = np.dot(matrix.T, matrix) + beta * np.identity(n)
+    left = np.linalg.pinv(coef)
+    right = np.dot(matrix.T, f)
+    return np.dot(left, right)
+    # right = np.matmul(matrix_trans, f)
+    # matrix_trans = np.transpose(matrix)
+    # left = np.linalg.inv(np.add(np.matmul(matrix_trans, matrix), beta * np.identity(len(matrix[0]))))
+    # return np.matmul(left, right)

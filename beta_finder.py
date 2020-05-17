@@ -1,22 +1,24 @@
+import numpy as np
 from pathlib import Path
 from eq_solver import data_fetcher as df
-import numpy as np
+from eq_solver import num_solver as ns
 
 
 blocks = df.fetch(Path('./resources/paper_data/p1.csv'))
 
-output = open('./output/paper_data/p1.out', "w+")
+output = open('./output/paper_data/p1_new.out', "w+")
 
-grid = 5
+beta = 0.01
+grid = 20
 
 for b in blocks:
-    for beta in [0.01, 0.1, 1]:
-        b.af_system(grid)
-        A, f = b.af
-        # sol = np.reshape(b.reg(grid, beta), (grid, grid))
-        # output.write('{} solution with beta = {}:\n'.format(b.date, beta))
-        # output.write(np.array2string(sol, max_line_width=np.inf, threshold=np.inf))
-        # output.write("\n\n")
-        # print('{} with {} finished'.format(b.date, beta))
+    b.af_system(grid)
+    A, f = b.af
+    res = ns.tikhonov(A, f, beta)
+    res = res.reshape((grid, grid))
+    output.write('{} solution with (grid = {}, beta = {}):\n'.format(b.date, grid, beta))
+    output.write(np.array2string(res, max_line_width=np.inf, threshold=np.inf))
+    output.write("\n\n")
+    print('{} with (grid = {}, beta = {}) finished'.format(b.date, grid, beta))
 
 output.close()
