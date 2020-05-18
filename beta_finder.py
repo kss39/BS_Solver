@@ -9,7 +9,7 @@ blocks = df.fetch(Path('./resources/paper_data/p1.csv'))
 output = open('./output/paper_data/p1_new.out', "w+")
 
 beta = 0.01
-grid = 20
+grid = 30
 
 for b in blocks:
     b.af_system(grid)
