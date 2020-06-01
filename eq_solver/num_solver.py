@@ -15,8 +15,8 @@ class DataBlock:
         :param stock_bid: current stock bid price
         """
         self.date = today
-        for i in {option_ask, option_bid, volatility}:
-            assert type(i) == tuple and len(i) == 3
+        # for i in {option_ask, option_bid, volatility}:
+            # assert type(i) == tuple and len(i) == 3
         for i in {stock_ask, stock_bid}:
             assert type(i) == float
         self.u_a = option_ask
